@@ -47,6 +47,12 @@ public class Product implements Serializable {
 	public void setProductDesc(String productDesc) {
 		this.productDesc = productDesc;
 	}
+	public Product(String productName, Long price, String productDesc) {
+		super();
+		this.productName = productName;
+		this.price = price;
+		this.productDesc = productDesc;
+	}
 	
 	
 

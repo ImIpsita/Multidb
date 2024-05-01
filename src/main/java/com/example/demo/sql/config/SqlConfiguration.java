@@ -4,11 +4,11 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -22,28 +22,26 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaRepositories(entityManagerFactoryRef = "entityManagerFactroryBean", basePackages = {
 		"com.example.demo.sql.repo" }, transactionManagerRef = "transcationmanager")
 public class SqlConfiguration {
-
-	@Autowired
-	Environment env;
-
-	// datasource
+	@ConfigurationProperties("spring.datasource.mysql")
 	@Bean
+	public DataSourceProperties mysqlproperties() {
+		return new DataSourceProperties();
+		
+	}
+	// datasource
 	@Primary
+	@Bean(name="firstdatasource")
 	public DataSource datasource() {
-
-		DriverManagerDataSource sqlDataSource = new DriverManagerDataSource();
-		sqlDataSource.setUrl(env.getProperty("spring.datasource.url"));
-		sqlDataSource.setUsername(env.getProperty("spring.datasource.username"));
-		sqlDataSource.setPassword(env.getProperty("spring.datasource.password"));
-		sqlDataSource.setDriverClassName(env.getProperty("spring.datasource.driver-classname"));
-
-		return sqlDataSource;
-
+		DriverManagerDataSource mysqlDataSource = new DriverManagerDataSource();
+		mysqlDataSource.setUrl(mysqlproperties().getUrl());
+		mysqlDataSource.setUsername(mysqlproperties().getUsername());
+		mysqlDataSource.setPassword(mysqlproperties().getPassword());
+		mysqlDataSource.setDriverClassName(mysqlproperties().getDriverClassName());
+		return mysqlDataSource;
 	}
 
-	// entitymanager
-	@Bean(name="entityManagerFactroryBean")
 	@Primary
+	@Bean(name="entityManagerFactroryBean")
 	public LocalContainerEntityManagerFactoryBean entitymnagerfactory() {
 
 		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
@@ -59,20 +57,18 @@ public class SqlConfiguration {
 
 	}
 
-	@Bean
 	public Properties hibernateProperty() {
 
 		Properties prop = new Properties();
 		prop.setProperty("hibernate.show_sql", "true");
 		prop.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-		prop.setProperty("hibernate.hdm2ddl.auto","update");
+		prop.setProperty("hibernate.hbm2ddl.auto", "update");
 		return prop;
 
 	}
 
-	// Transcationmanager
-	@Bean(name="transcationmanager")
 	@Primary
+	@Bean(name="transcationmanager")
 	public PlatformTransactionManager transcationManager() {
 
 		JpaTransactionManager transcationManager = new JpaTransactionManager();
@@ -82,5 +78,4 @@ public class SqlConfiguration {
 		return transcationManager;
 
 	}
-
 }

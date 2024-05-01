@@ -3,11 +3,10 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -22,24 +21,24 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 		"com.example.demo.postgre.repo" }, transactionManagerRef = "secondtranscationmanager")
 public class PostgreConfig {
 	
-	@Autowired
-	Environment env;
-
+	@ConfigurationProperties("spring.datasource.pg")
+	@Bean("seconfpgproperties")
+	public DataSourceProperties postgresqlproperties() {
+		return new DataSourceProperties();
+		
+	}
 	// datasource
 	@Bean(name="seconddatasource")
-	@Primary
 	public DataSource datasource() {
 		DriverManagerDataSource postDataSource = new DriverManagerDataSource();
-		postDataSource.setUrl(env.getProperty("second.datasource.url"));
-		postDataSource.setUsername(env.getProperty("second.datasource.username"));
-		postDataSource.setPassword(env.getProperty("second.datasource.password"));
-		postDataSource.setDriverClassName(env.getProperty("second.datasource.driver-classname"));
+		postDataSource.setUrl(postgresqlproperties().getUrl());
+		postDataSource.setUsername(postgresqlproperties().getUsername());
+		postDataSource.setPassword(postgresqlproperties().getPassword());
+		postDataSource.setDriverClassName(postgresqlproperties().getDriverClassName());
 		return postDataSource;
 	}
-
-	// entitymanager
+	
 	@Bean(name="secondentityManagerFactroryBean")
-	@Primary
 	public LocalContainerEntityManagerFactoryBean entitymnagerfactory() {
 		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 		emf.setDataSource(datasource());
@@ -49,7 +48,8 @@ public class PostgreConfig {
 		return emf;
 	}
 
-	@Bean(name = "postgresqlHibernate")
+
+
 	public Properties hibernateProperty() {
 		Properties prop = new Properties();
 		prop.setProperty("hibernate.show_sql", "true");
@@ -60,11 +60,11 @@ public class PostgreConfig {
 
 	// Transcationmanager
 	@Bean(name="secondtranscationmanager")
-	@Primary
-	public PlatformTransactionManager transcationManager() {
+        public PlatformTransactionManager transcationManager() {
 		JpaTransactionManager transcationManager = new JpaTransactionManager();
 		transcationManager.setEntityManagerFactory(entitymnagerfactory().getObject());
 	//	transcationManager.setDataSource(datasource());
 		return transcationManager;
 	}
+	
 }

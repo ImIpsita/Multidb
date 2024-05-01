@@ -41,6 +41,11 @@ public class User implements Serializable {
 	public void setEmail(String email) {
 		this.email = email;
 	}
+	public User(String userName, String email) {
+		super();
+		this.userName = userName;
+		this.email = email;
+	}
 
 	
 
